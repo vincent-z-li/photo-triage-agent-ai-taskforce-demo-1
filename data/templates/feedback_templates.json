@@ -1,0 +1,94 @@
+{
+  "feedback_templates": {
+    "quality_assessment": {
+      "excellent": {
+        "message": "Excellent photo quality! All images meet professional documentation standards.",
+        "tone": "positive",
+        "recommendations": [
+          "Continue maintaining this high standard of photo documentation",
+          "Your attention to detail is helping create valuable job records"
+        ]
+      },
+      "good": {
+        "message": "Good photo quality overall with room for minor improvements.",
+        "tone": "encouraging",
+        "recommendations": [
+          "Most photos meet quality standards",
+          "Consider checking lighting conditions for even better results"
+        ]
+      },
+      "fair": {
+        "message": "Photos are acceptable but several improvements would enhance documentation quality.",
+        "tone": "constructive",
+        "recommendations": [
+          "Focus on improving image sharpness",
+          "Ensure proper lighting when possible",
+          "Take multiple shots of important areas"
+        ]
+      },
+      "poor": {
+        "message": "Photo quality needs significant improvement for proper job documentation.",
+        "tone": "helpful",
+        "recommendations": [
+          "Several photos should be retaken",
+          "Ensure camera is steady and properly focused",
+          "Check lighting conditions before taking photos",
+          "Consider using flash or additional lighting"
+        ]
+      }
+    },
+    "category_feedback": {
+      "well_categorized": {
+        "message": "Photos are well-organized and clearly show different aspects of the job.",
+        "recommendations": [
+          "Good coverage of required documentation areas",
+          "Clear subject matter in each photo"
+        ]
+      },
+      "missing_categories": {
+        "message": "Some important photo categories are missing from your documentation.",
+        "recommendations": [
+          "Consider taking before/after comparison shots",
+          "Document any equipment or tools used",
+          "Include safety-related photos when applicable"
+        ]
+      },
+      "unclear_subjects": {
+        "message": "Some photos have unclear subjects that are difficult to categorize.",
+        "recommendations": [
+          "Focus on specific subjects in each photo",
+          "Avoid cluttered backgrounds when possible",
+          "Take closer shots of important details"
+        ]
+      }
+    },
+    "actionable_items": {
+      "retake_photos": {
+        "priority": "high",
+        "message": "The following photos should be retaken for better quality:",
+        "icon": "📸"
+      },
+      "additional_shots": {
+        "priority": "medium", 
+        "message": "Consider taking additional photos of:",
+        "icon": "➕"
+      },
+      "lighting_improvement": {
+        "priority": "medium",
+        "message": "Improve lighting for these types of shots:",
+        "icon": "💡"
+      },
+      "focus_improvement": {
+        "priority": "medium",
+        "message": "Ensure proper focus for:",
+        "icon": "🎯"
+      }
+    },
+    "encouragement": [
+      "Your documentation efforts help create valuable job records",
+      "Good photo documentation supports quality service delivery",
+      "Clear photos help with future reference and troubleshooting",
+      "Professional documentation reflects well on the quality of work"
+    ]
+  }
+}

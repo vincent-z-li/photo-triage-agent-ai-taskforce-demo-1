@@ -1,0 +1,89 @@
+{
+  "templates": [
+    {
+      "id": "electrical_inspection",
+      "name": "Electrical Inspection",
+      "description": "Standard electrical system inspection and maintenance",
+      "required_photo_categories": [
+        "equipment_photo",
+        "before_work",
+        "during_work",
+        "after_work",
+        "safety_documentation"
+      ],
+      "optional_categories": [
+        "environmental_conditions",
+        "material_inventory"
+      ],
+      "quality_requirements": {
+        "minimum_photos": 5,
+        "quality_threshold": 0.7,
+        "required_equipment_shots": 2
+      }
+    },
+    {
+      "id": "plumbing_repair",
+      "name": "Plumbing Repair",
+      "description": "Plumbing system repair and maintenance",
+      "required_photo_categories": [
+        "before_work",
+        "damage_assessment", 
+        "during_work",
+        "after_work",
+        "material_inventory"
+      ],
+      "optional_categories": [
+        "equipment_photo",
+        "environmental_conditions"
+      ],
+      "quality_requirements": {
+        "minimum_photos": 4,
+        "quality_threshold": 0.6,
+        "required_damage_shots": 2
+      }
+    },
+    {
+      "id": "hvac_maintenance",
+      "name": "HVAC Maintenance",
+      "description": "Heating, ventilation, and air conditioning maintenance",
+      "required_photo_categories": [
+        "equipment_photo",
+        "before_work",
+        "during_work",
+        "after_work"
+      ],
+      "optional_categories": [
+        "material_inventory",
+        "environmental_conditions",
+        "safety_documentation"
+      ],
+      "quality_requirements": {
+        "minimum_photos": 4,
+        "quality_threshold": 0.7,
+        "required_equipment_shots": 3
+      }
+    },
+    {
+      "id": "general_maintenance",
+      "name": "General Maintenance",
+      "description": "General facility maintenance and repairs",
+      "required_photo_categories": [
+        "before_work",
+        "after_work"
+      ],
+      "optional_categories": [
+        "equipment_photo",
+        "during_work",
+        "damage_assessment",
+        "material_inventory",
+        "environmental_conditions",
+        "safety_documentation"
+      ],
+      "quality_requirements": {
+        "minimum_photos": 2,
+        "quality_threshold": 0.6,
+        "required_equipment_shots": 0
+      }
+    }
+  ]
+}

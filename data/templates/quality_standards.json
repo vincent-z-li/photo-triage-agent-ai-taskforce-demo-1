@@ -1,0 +1,69 @@
+{
+  "quality_standards": {
+    "image_quality": {
+      "minimum_score": 0.7,
+      "excellent_threshold": 0.8,
+      "factors": {
+        "sharpness": {
+          "weight": 0.4,
+          "description": "Image focus and clarity"
+        },
+        "brightness": {
+          "weight": 0.2,
+          "description": "Proper lighting and exposure"
+        },
+        "contrast": {
+          "weight": 0.2,
+          "description": "Subject visibility and detail"
+        },
+        "noise": {
+          "weight": 0.2,
+          "description": "Image noise and artifacts"
+        }
+      }
+    },
+    "content_relevance": {
+      "high": {
+        "score_multiplier": 1.0,
+        "description": "Directly relevant to job requirements"
+      },
+      "medium": {
+        "score_multiplier": 0.7,
+        "description": "Somewhat relevant to job context"
+      },
+      "low": {
+        "score_multiplier": 0.3,
+        "description": "Minimal relevance to job requirements"
+      }
+    },
+    "documentation_completeness": {
+      "required_categories": {
+        "before_work": "Initial conditions documentation",
+        "after_work": "Completion documentation"
+      },
+      "recommended_categories": {
+        "equipment_photo": "Tools and equipment used",
+        "during_work": "Work progress documentation",
+        "safety_documentation": "Safety protocols followed",
+        "material_inventory": "Materials and parts used"
+      }
+    },
+    "retry_conditions": {
+      "quality_threshold_failure": {
+        "condition": "quality_score < 0.5",
+        "action": "Recommend retaking photo",
+        "priority": "high"
+      },
+      "category_mismatch": {
+        "condition": "category == 'other' AND confidence < 0.6",
+        "action": "Request clearer subject focus",
+        "priority": "medium"
+      },
+      "insufficient_coverage": {
+        "condition": "missing_required_categories > 0",
+        "action": "Request additional photos",
+        "priority": "high"
+      }
+    }
+  }
+}
