@@ -106,8 +106,8 @@ if [ ! -d "agent-server" ]; then
     exit 1
 fi
 
-if [ ! -d "demo" ]; then
-    echo -e "${RED}❌ demo directory not found${NC}"
+if [ ! -d "demo-front-end" ]; then
+    echo -e "${RED}❌ demo-front-end directory not found${NC}"
     exit 1
 fi
 
@@ -153,7 +153,7 @@ cd ..
 
 # Setup Angular frontend dependencies
 echo "Setting up Angular frontend dependencies..."
-cd demo
+cd demo-front-end
 npm install
 cd ..
 
@@ -191,7 +191,7 @@ fi
 
 # Start Angular frontend
 echo "🌐 Starting Angular frontend on port 4200..."
-cd demo
+cd demo-front-end
 npm start > ../logs/frontend.log 2>&1 &
 FRONTEND_PID=$!
 cd ..
