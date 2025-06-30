@@ -1,135 +1,282 @@
-# Photo Triage System - Clean Architecture
+# Photo Triage Agent System
 
-An intelligent agent system for triaging and analyzing photos using computer vision and AI models with separated MCP and Agent servers.
+A sophisticated photo analysis system using LangGraph workflows and MCP (Model Context Protocol) for field technician photo documentation and quality assessment.
 
-## Architecture
+## 🏗️ Architecture
 
 ```
-├── mcp-server/           # MCP Server (HTTP transport)
-│   ├── main.py          # MCP server entry point
-│   ├── mcp/             # MCP server implementation
-│   ├── tools/           # Photo processing tools
-│   ├── resources/       # MCP resources
-│   └── core/            # Configuration and logging
-│
-├── agent-server/        # Agent Server (FastAPI)
-│   ├── main.py          # Agent server entry point  
-│   ├── api/             # REST API endpoints
-│   ├── services/        # LangGraph agent & MCP client
-│   └── config/          # Configuration and logging
-│
-└── scripts/
-    └── run_servers.sh   # Start both servers
+┌─────────────────┐    ┌──────────────────┐
+│   Agent Server  │◄──►│   MCP Server     │
+│   (LangGraph)   │    │   (Pure Tools)   │
+│                 │    │                  │
+│ • OpenAI Client │    │ • Image Utils    │
+│ • LangGraph     │    │ • Quality Calc   │
+│ • Orchestration │    │ • File I/O       │
+│ • Reflection    │    │ • Templates      │
+└─────────────────┘    └──────────────────┘
 ```
 
-## Features
+## 🚀 Quick Start
 
-- **Photo Classification**: Automatically categorize photos into predefined categories
-- **Quality Analysis**: Analyze technical photo quality (blur, exposure, composition)
-- **Batch Processing**: Process multiple photos concurrently for efficiency
-- **Intelligent Feedback**: Generate actionable feedback based on analysis results
-- **ReAct Agent Workflow**: Advanced workflow with reflection and retry mechanisms
-- **REST API**: FastAPI-based REST endpoints for easy integration
-- **Proper MCP Server**: Lightweight MCP server with streamable-http transport (no FastAPI dependency)
-
-## Quick Start
-
-### Prerequisites
-- Python 3.11+
-- OpenAI API key
-- Anthropic API key (optional)
-- LangChain API key (optional, for tracing)
-
-### Installation
-
-1. Clone and setup:
+### Method 1: Startup Script (Recommended)
 ```bash
-git clone <repository>
+# Clone and navigate to the project
+git clone <repository-url>
 cd a-test-agent
-./scripts/setup.sh
+
+# Run the startup script
+./start-servers.sh
 ```
 
-2. Configure environment:
+### Method 2: Docker Compose (Production Ready)
 ```bash
-cp .env.dist .env
-# Edit .env with your API keys
-```
-
-3. Start both servers:
-```bash
-./scripts/run_servers.sh
-```
-
-### Alternative: Docker
-```bash
-# Copy environment file
+# Set up environment variables
 cp .env.example .env
 # Edit .env with your API keys
 
-# Start with Docker
-docker-compose up
+# Start with Docker Compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
 ```
 
-## Usage
-
-### REST API Endpoints
-
-The agent server provides REST endpoints at `http://localhost:8001`:
-
-- `POST /api/v1/triage/classify` - Classify a single photo
-- `POST /api/v1/triage/analyze-quality` - Analyze photo quality  
-- `POST /api/v1/triage/process-batch` - Process multiple photos
-- `POST /api/v1/triage/process-batch-stream` - Process multiple photos with real-time streaming 🔥
-- `POST /api/v1/triage/workflow` - Execute full ReAct triage workflow
-- `POST /api/v1/triage/feedback` - Generate feedback from results
-
-### Streaming Support
-
-The system now supports **real-time streaming** for long-running operations:
-
-- **Server-Sent Events (SSE)**: Frontend can receive real-time progress updates
-- **Streamable HTTP**: MCP server uses `streamable-http` transport
-- **Progress Tracking**: Live updates on batch processing status
-- **Error Streaming**: Real-time error reporting during processing
-
-### API Documentation
-
-Visit `http://localhost:8001/docs` for interactive API documentation.
-
-### Quick Demo
-
+### Method 3: Manual Setup (Development)
 ```bash
-./quick_demo.sh
+# Terminal 1 - MCP Server
+cd mcp-server
+pip install -e .
+python main.py
+
+# Terminal 2 - Agent Server  
+cd agent-server
+pip install -e .
+python main.py
 ```
 
-## MCP Communication
+## 📋 Prerequisites
 
-- Agent Server: http://localhost:8001
-- MCP Server: http://localhost:8002  
-- Protocol: Proper MCP with **streamable-http** transport (aiohttp-based)
-- Features: MCP 2025-06-18, capability negotiation, session management, real-time streaming
+- **Python 3.11+**
+- **Docker & Docker Compose** (for containerized deployment)
+- **API Keys** (at least one):
+  - OpenAI API key (for vision model classification)
+  - Anthropic API key (optional)
+  - LangChain API key (optional, for tracing)
 
-## Benefits of Separated Architecture
+## 🔧 Configuration
 
-1. **Scalability**: Servers can be scaled independently
-2. **Deployment Flexibility**: Deploy on different hosts/containers  
-3. **Protocol Compliance**: Proper MCP implementation with streamable-http
-4. **Lightweight**: No unnecessary FastAPI dependency in MCP server
-5. **Docker Ready**: Full containerization support
-6. **Network Communication**: Can communicate across network boundaries
+### Environment Variables
 
-## Development
+Copy `.env.example` to `.env` and configure:
 
-### Running Tests
+```env
+# Required for LLM functionality
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+LANGCHAIN_API_KEY=your_langchain_api_key_here
+
+# Server Configuration
+AGENT_SERVER_PORT=8001
+MCP_SERVER_PORT=8002
+```
+
+### Server Ports
+- **Agent Server**: http://localhost:8001
+- **MCP Server**: http://localhost:8002
+- **API Documentation**: http://localhost:8001/docs
+
+## 📡 API Endpoints
+
+### Health & Monitoring
+- `GET /health` - Application health check
+- `GET /health/ready` - Readiness probe
+- `GET /health/live` - Liveness probe
+- `GET /info` - Application information
+
+### Photo Analysis
+- `POST /triage/classify` - Classify single photo
+- `POST /triage/analyze-quality` - Analyze photo quality
+- `POST /triage/process-batch` - Process multiple photos
+- `POST /triage/workflow` - Execute full triage workflow
+- `POST /triage/feedback` - Generate feedback
+
+### Streaming
+- `POST /triage/process-batch-stream` - Real-time batch processing
+
+## 🧪 Testing the API
+
+### Using curl:
 ```bash
-./scripts/test.sh
+# Health check
+curl http://localhost:8001/health
+
+# Classify a photo (base64 encoded)
+curl -X POST "http://localhost:8001/triage/classify" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "image_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+    "job_context": "Equipment inspection"
+  }'
+
+# Full workflow
+curl -X POST "http://localhost:8001/triage/workflow" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "images": [{"image_path": "test_images/sample.jpg"}],
+    "job_context": "Routine maintenance check",
+    "enable_retry": true
+  }'
 ```
 
-### Development Mode
+### Using the interactive API docs:
+Visit http://localhost:8001/docs for the Swagger UI interface.
+
+## 🏗️ Project Structure
+
+```
+a-test-agent/
+├── agent-server/              # LangGraph orchestration server
+│   ├── models/               # State management
+│   ├── llm/                 # LLM services
+│   ├── nodes/               # Workflow nodes
+│   ├── workflow/            # Workflow construction
+│   ├── services/            # Core services
+│   └── api/                 # REST API
+├── mcp-server/               # MCP tools server
+│   ├── tools/               # Pure computational tools
+│   ├── resources/           # Template resources
+│   └── utils/               # Utility functions
+├── data/                    # Configuration templates
+├── test_images/             # Sample images
+├── docker-compose.yml       # Container orchestration
+└── start-servers.sh         # Development startup script
+```
+
+## 🔍 Workflow Overview
+
+1. **Photo Preprocessing**: MCP server handles image validation, resizing, metadata extraction
+2. **Quality Analysis**: Computer vision analysis of technical quality
+3. **LLM Classification**: OpenAI vision model categorizes photos
+4. **Reflection**: Analyzes results quality and determines if retry needed
+5. **Feedback Generation**: Creates actionable feedback for technicians
+
+## 🛠️ Development
+
+### Adding New Workflow Nodes
+1. Create node in `agent-server/nodes/`
+2. Add to workflow in `agent-server/workflow/builder.py`
+3. Update state if needed in `agent-server/models/state.py`
+
+### Adding New MCP Tools
+1. Create tool in `mcp-server/tools/`
+2. Register in MCP server main
+3. Add client method in `agent-server/services/mcp_client.py`
+
+## 🐳 Docker Deployment
+
+### Build and Run
 ```bash
-./scripts/run_dev.sh
+# Build images
+docker-compose build
+
+# Run in background
+docker-compose up -d
+
+# Scale services
+docker-compose up -d --scale agent-server=2
+
+# View logs
+docker-compose logs -f agent-server
+docker-compose logs -f mcp-server
 ```
 
-## License
+### Production Deployment
+```bash
+# Use production compose file
+docker-compose -f docker-compose.prod.yml up -d
+```
 
-MIT License
+## 🔒 Security
+
+- **Non-root containers**: Both servers run as non-root users
+- **API key management**: Use environment variables, never commit keys
+- **Health checks**: Built-in health monitoring
+- **Input validation**: Comprehensive request validation
+
+## 📊 Monitoring
+
+### Health Endpoints
+- Application health status
+- Service dependency checks
+- Memory usage monitoring
+- Uptime tracking
+
+### Logging
+- Structured JSON logging
+- Per-service log files in `logs/` directory
+- Docker logs available via `docker-compose logs`
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+**Port already in use:**
+```bash
+# Check what's using the port
+lsof -i :8001
+lsof -i :8002
+
+# Kill processes if needed
+kill $(lsof -t -i:8001)
+```
+
+**MCP server not ready:**
+- Check logs: `tail -f logs/mcp-server.log`
+- Verify dependencies are installed
+- Check port 8002 is available
+
+**Agent server connection issues:**
+- Ensure MCP server is running first
+- Check network connectivity between containers
+- Verify environment variables
+
+**API key issues:**
+- Verify OpenAI API key is valid
+- Check .env file is properly loaded
+- Test API key with simple OpenAI call
+
+### Debugging
+```bash
+# View live logs
+tail -f logs/*.log
+
+# Docker debugging
+docker-compose logs -f
+docker exec -it photo-triage-agent bash
+docker exec -it photo-triage-mcp bash
+
+# Health checks
+curl http://localhost:8001/health
+curl http://localhost:8002/health
+```
+
+## 📄 License
+
+MIT License - see LICENSE file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📞 Support
+
+For issues and questions:
+1. Check the troubleshooting section
+2. Review logs for error messages
+3. Open an issue on GitHub

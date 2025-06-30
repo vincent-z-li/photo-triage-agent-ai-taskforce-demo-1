@@ -1,14 +1,10 @@
 from typing import Any, Dict, List
-from openai import AsyncOpenAI
-from core.config import settings
-from utils.exceptions import ModelError
 from tools.base import BaseTool
 
 
 class FeedbackGeneratorTool(BaseTool):
     def __init__(self):
         super().__init__("feedback_generator")
-        self.client = AsyncOpenAI(api_key=settings.openai_api_key) if settings.openai_api_key else None
     
     async def execute(self, *args, **kwargs) -> Dict[str, Any]:
         return await self.generate(args[0], args[1])
@@ -19,12 +15,13 @@ class FeedbackGeneratorTool(BaseTool):
         quality_results: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
         try:
-            feedback = await self._generate_personalized_feedback(
-                classification_results, quality_results
-            )
+            # Generate template-based feedback and analysis data
+            feedback = self._generate_template_feedback(classification_results, quality_results)
+            analysis_summary = self._create_analysis_summary(classification_results, quality_results)
             
             result = {
                 "feedback": feedback,
+                "analysis_summary": analysis_summary,
                 "total_images_analyzed": len(classification_results),
                 "actionable_items": self._extract_actionable_items(feedback),
                 "priority_level": self._determine_priority_level(classification_results, quality_results)
@@ -41,44 +38,6 @@ class FeedbackGeneratorTool(BaseTool):
             self.logger.error(f"Feedback generation failed: {e}")
             return {"error": str(e)}
     
-    async def _generate_personalized_feedback(
-        self, 
-        classifications: List[Dict[str, Any]], 
-        quality_analyses: List[Dict[str, Any]]
-    ) -> str:
-        if not self.client:
-            return self._generate_template_feedback(classifications, quality_analyses)
-        
-        summary = self._create_analysis_summary(classifications, quality_analyses)
-        
-        prompt = f"""Based on the following photo analysis results, provide personalized feedback for a field technician:
-
-        Analysis Summary:
-        {summary}
-
-        Please provide:
-        1. Overall assessment of the photo documentation quality
-        2. Specific issues found and their impact on job documentation
-        3. Concrete recommendations for improvement
-        4. Any photos that should be retaken and why
-        5. Positive feedback on good quality photos
-
-        Keep the tone professional but supportive. Focus on actionable advice.
-        """
-        
-        try:
-            response = await self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=800,
-                temperature=0.3
-            )
-            
-            return response.choices[0].message.content
-            
-        except Exception as e:
-            self.logger.warning(f"AI feedback generation failed, using template: {e}")
-            return self._generate_template_feedback(classifications, quality_analyses)
     
     def _create_analysis_summary(
         self, 

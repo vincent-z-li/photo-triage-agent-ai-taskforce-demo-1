@@ -75,12 +75,11 @@ async def readiness_check() -> Dict[str, str]:
     
     try:
         # Check if we can import critical modules
-        from ...tools.photo_classifier import PhotoClassifierTool
-        from ...tools.quality_analyzer import QualityAnalyzerTool
-        from ...services.langgraph_agent import TriageAgent
+        from services.triage_agent import TriageAgent
+        from services.mcp_client import MCPClient
         
-        checks["tools"] = "ready"
         checks["agent"] = "ready"
+        checks["mcp_client"] = "ready"
         
     except Exception as e:
         logger.error("Readiness check failed", error=str(e))

@@ -23,7 +23,7 @@ from ..models.responses import (
     StatusEnum
 )
 from services.mcp_client import MCPHttpClient
-from services.langgraph_agent import TriageAgent
+from services.triage_agent import TriageAgent
 from config.logging import get_logger
 
 logger = get_logger(__name__)
@@ -191,7 +191,7 @@ async def process_batch(
                 image_paths.append(path)
             else:
                 # Use existing test images for demo
-                test_paths = ["test_images/1000000772.png", "test_images/1000000773.png", "test_images/1000000774.png", "test_images/1000000775.png"]
+                test_paths = ["../test_images/1000000772.png", "../test_images/1000000773.png", "../test_images/1000000774.png", "../test_images/1000000775.png"]
                 if i < len(test_paths) and os.path.exists(test_paths[i]):
                     image_paths.append(test_paths[i])
         
@@ -256,7 +256,7 @@ async def execute_triage_workflow(
                 image_paths.append(path)
             else:
                 # Use existing test images for demo
-                test_paths = ["test_images/1000000772.png", "test_images/1000000773.png", "test_images/1000000774.png", "test_images/1000000775.png"]
+                test_paths = ["../test_images/1000000772.png", "../test_images/1000000773.png", "../test_images/1000000774.png", "../test_images/1000000775.png"]
                 if i < len(test_paths) and os.path.exists(test_paths[i]):
                     image_paths.append(test_paths[i])
         
@@ -365,7 +365,7 @@ async def process_batch_stream(
                     image_paths.append(path)
                 else:
                     # Use existing test images for demo
-                    test_paths = ["test_images/1000000772.png", "test_images/1000000773.png", "test_images/1000000774.png", "test_images/1000000775.png"]
+                    test_paths = ["../test_images/1000000772.png", "../test_images/1000000773.png", "../test_images/1000000774.png", "../test_images/1000000775.png"]
                     if i < len(test_paths) and os.path.exists(test_paths[i]):
                         image_paths.append(test_paths[i])
             
