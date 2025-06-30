@@ -1,5 +1,7 @@
 # Photo Triage Agent System
 
+**This README is generated with Claude Code, but more accurate than the ones i wrote 😂**
+
 A photo analysis system using LangGraph workflows and MCP (Model Context Protocol) for field technician photo documentation and quality assessment, featuring a modern Angular frontend demo.
 
 ## 🏗️ Architecture
