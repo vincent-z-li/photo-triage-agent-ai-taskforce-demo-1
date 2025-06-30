@@ -1,0 +1,20 @@
+<div class="app-container">
+  <header class="app-header">
+    <h1>🤖 Agent Photo Triage Demo</h1>
+    <p>Experience real-time AI-powered photo classification and quality analysis with ReAct workflow</p>
+  </header>
+
+  <main class="app-main">
+    <app-image-upload 
+      (imagesSelected)="onImagesSelected($event)"
+      (processStart)="onProcessStart()"
+      #uploadComponent>
+    </app-image-upload>
+
+    <app-workflow-visualizer 
+      [progress]="workflowProgress">
+    </app-workflow-visualizer>
+  </main>
+</div>
+
+<router-outlet></router-outlet>

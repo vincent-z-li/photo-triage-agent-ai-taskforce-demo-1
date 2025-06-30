@@ -1,63 +1,45 @@
 # Photo Triage Agent System
 
-A sophisticated photo analysis system using LangGraph workflows and MCP (Model Context Protocol) for field technician photo documentation and quality assessment.
+A photo analysis system using LangGraph workflows and MCP (Model Context Protocol) for field technician photo documentation and quality assessment, featuring a modern Angular frontend demo.
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐
-│   Agent Server  │◄──►│   MCP Server     │
-│   (LangGraph)   │    │   (Pure Tools)   │
-│                 │    │                  │
-│ • OpenAI Client │    │ • Image Utils    │
-│ • LangGraph     │    │ • Quality Calc   │
-│ • Orchestration │    │ • File I/O       │
-│ • Reflection    │    │ • Templates      │
-└─────────────────┘    └──────────────────┘
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Angular Demo   │    │   Agent Server   │◄──►│   MCP Server    │
+│   (Frontend)    │◄──►│   (LangGraph)    │    │  (Pure Tools)   │
+│                 │    │                  │    │                 │
+│ • Photo Upload  │    │ • OpenAI Client  │    │ • Image Utils   │
+│ • Progress UI   │    │ • LangGraph      │    │ • Quality Calc  │
+│ • Real-time     │    │ • Orchestration  │    │ • File I/O      │
+│ • Visualization │    │ • Reflection     │    │ • Templates     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
 ## 🚀 Quick Start
 
-### Method 1: Startup Script (Recommended)
+### One-Command Startup (Recommended)
 ```bash
 # Clone and navigate to the project
 git clone <repository-url>
 cd a-test-agent
 
-# Run the startup script
+# Start all services with one command
 ./start-servers.sh
 ```
 
-### Method 2: Docker Compose (Production Ready)
-```bash
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your API keys
-
-# Start with Docker Compose
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-```
-
-### Method 3: Manual Setup (Development)
-```bash
-# Terminal 1 - MCP Server
-cd mcp-server
-pip install -e .
-python main.py
-
-# Terminal 2 - Agent Server  
-cd agent-server
-pip install -e .
-python main.py
-```
+This will automatically:
+- ✅ Check and free required ports (8001, 8002, 4200)
+- ✅ Set up Python virtual environments with `uv`
+- ✅ Install all dependencies (Python + Node.js)
+- ✅ Start MCP Server, Agent Server, and Angular Frontend
+- ✅ Provide health checks and real-time logging
 
 ## 📋 Prerequisites
 
 - **Python 3.11+**
-- **Docker & Docker Compose** (for containerized deployment)
+- **Node.js 18+** and **npm**
+- **uv** (Python package manager) - Install with: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **API Keys** (at least one):
   - OpenAI API key (for vision model classification)
   - Anthropic API key (optional)
@@ -67,7 +49,7 @@ python main.py
 
 ### Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+Create a `.env` file in the root directory:
 
 ```env
 # Required for LLM functionality
@@ -77,206 +59,143 @@ OPENAI_API_KEY=your_openai_api_key_here
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
 LANGCHAIN_API_KEY=your_langchain_api_key_here
 
-# Server Configuration
+# Server Configuration (defaults shown)
 AGENT_SERVER_PORT=8001
 MCP_SERVER_PORT=8002
 ```
 
-### Server Ports
-- **Agent Server**: http://localhost:8001
+### Service URLs
+- **Angular Frontend**: http://localhost:4200 (Main UI)
+- **Agent Server API**: http://localhost:8001
 - **MCP Server**: http://localhost:8002
 - **API Documentation**: http://localhost:8001/docs
+
+## 🌐 Using the Frontend Demo
+
+1. **Start the system**: Run `./start-servers.sh`
+2. **Open the demo**: Navigate to http://localhost:4200
+3. **Upload photos**: Drag and drop or click to select up to 10 images
+4. **Start analysis**: Click "Start Triage Workflow"
+5. **Watch progress**: Real-time workflow visualization with step-by-step updates
+6. **View results**: See quality analysis, classification, and feedback
+
+### Frontend Features
+- ✨ Drag & drop photo upload
+- 📊 Real-time workflow progress visualization
+- 🔄 Server-Sent Events (SSE) streaming
+- 📱 Responsive design
+- ⚡ Built with Angular 18 (standalone components)
 
 ## 📡 API Endpoints
 
 ### Health & Monitoring
-- `GET /health` - Application health check
-- `GET /health/ready` - Readiness probe
-- `GET /health/live` - Liveness probe
-- `GET /info` - Application information
+- `GET /api/v1/health` - Application health check
+- `GET /health` - Simple health probe
 
 ### Photo Analysis
-- `POST /triage/classify` - Classify single photo
-- `POST /triage/analyze-quality` - Analyze photo quality
-- `POST /triage/process-batch` - Process multiple photos
-- `POST /triage/workflow` - Execute full triage workflow
-- `POST /triage/feedback` - Generate feedback
+- `POST /api/v1/triage/classify` - Classify single photo
+- `POST /api/v1/triage/analyze-quality` - Analyze photo quality
+- `POST /api/v1/triage/workflow` - Execute full triage workflow
+- `POST /api/v1/triage/workflow-stream` - Real-time workflow with SSE
 
-### Streaming
-- `POST /triage/process-batch-stream` - Real-time batch processing
-
-## 🧪 Testing the API
-
-### Using curl:
+### Streaming Workflow Example
 ```bash
-# Health check
-curl http://localhost:8001/health
-
-# Classify a photo (base64 encoded)
-curl -X POST "http://localhost:8001/triage/classify" \
+curl -X POST "http://localhost:8001/api/v1/triage/workflow-stream" \
   -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
   -d '{
-    "image_base64": "data:image/jpeg;base64,/9j/4AAQ...",
-    "job_context": "Equipment inspection"
-  }'
-
-# Full workflow
-curl -X POST "http://localhost:8001/triage/workflow" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "images": [{"image_path": "test_images/sample.jpg"}],
-    "job_context": "Routine maintenance check",
+    "images": [{"image_base64": "base64_data", "filename": "test.jpg"}],
+    "job_context": "Equipment inspection",
     "enable_retry": true
   }'
 ```
-
-### Using the interactive API docs:
-Visit http://localhost:8001/docs for the Swagger UI interface.
 
 ## 🏗️ Project Structure
 
 ```
 a-test-agent/
-├── agent-server/              # LangGraph orchestration server
-│   ├── models/               # State management
-│   ├── llm/                 # LLM services
-│   ├── nodes/               # Workflow nodes
-│   ├── workflow/            # Workflow construction
-│   ├── services/            # Core services
-│   └── api/                 # REST API
-├── mcp-server/               # MCP tools server
-│   ├── tools/               # Pure computational tools
-│   ├── resources/           # Template resources
-│   └── utils/               # Utility functions
-├── data/                    # Configuration templates
-├── test_images/             # Sample images
-├── docker-compose.yml       # Container orchestration
-└── start-servers.sh         # Development startup script
+├── demo/                        # Angular frontend demo
+│   ├── src/app/
+│   │   ├── components/         # UI components
+│   │   │   ├── image-upload/   # Photo upload component
+│   │   │   └── workflow-visualizer/ # Progress visualization
+│   │   └── services/           # API services
+│   │       ├── agent.service.ts    # Workflow management
+│   │       └── api.service.ts      # HTTP & SSE client
+│   ├── package.json            # Node.js dependencies
+│   └── angular.json            # Angular configuration
+├── agent-server/               # LangGraph orchestration server
+│   ├── models/                # State management
+│   ├── llm/                  # LLM services
+│   ├── nodes/                # Workflow nodes
+│   ├── workflow/             # Workflow construction
+│   ├── services/             # Core services
+│   └── api/                  # REST API & SSE endpoints
+├── mcp-server/                # MCP tools server
+│   ├── tools/                # Pure computational tools
+│   ├── resources/            # Template resources
+│   └── utils/                # Utility functions
+├── logs/                     # Service logs
+│   ├── mcp-server.log       # MCP server logs
+│   ├── agent-server.log     # Agent server logs
+│   └── frontend.log         # Angular dev server logs
+└── start-servers.sh          # Unified startup script
 ```
 
 ## 🔍 Workflow Overview
 
-1. **Photo Preprocessing**: MCP server handles image validation, resizing, metadata extraction
+The system processes photos through a 5-step workflow:
+
+1. **Initialize Processing**: Setup and validation
 2. **Quality Analysis**: Computer vision analysis of technical quality
-3. **LLM Classification**: OpenAI vision model categorizes photos
-4. **Reflection**: Analyzes results quality and determines if retry needed
-5. **Feedback Generation**: Creates actionable feedback for technicians
+3. **Photo Classification**: OpenAI vision model categorizes photos
+4. **ReAct Reflection**: Analyzes results quality and determines if retry needed
+5. **Generate Feedback**: Creates actionable feedback for technicians
+
+Each step provides real-time updates through the Angular frontend via Server-Sent Events.
 
 ## 🛠️ Development
 
-### Adding New Workflow Nodes
+### Manual Development Setup
+```bash
+# Terminal 1 - MCP Server
+cd mcp-server
+uv sync
+uv run python main.py
+
+# Terminal 2 - Agent Server  
+cd agent-server
+uv sync
+uv run python main.py
+
+# Terminal 3 - Angular Frontend
+cd demo
+npm install
+npm start
+```
+
+### Adding New Features
+
+**Frontend Components:**
+1. Create component in `demo/src/app/components/`
+2. Add to Angular routing if needed
+3. Update services for new API endpoints
+
+**Backend Workflow Nodes:**
 1. Create node in `agent-server/nodes/`
 2. Add to workflow in `agent-server/workflow/builder.py`
 3. Update state if needed in `agent-server/models/state.py`
 
-### Adding New MCP Tools
+**MCP Tools:**
 1. Create tool in `mcp-server/tools/`
 2. Register in MCP server main
 3. Add client method in `agent-server/services/mcp_client.py`
 
-## 🐳 Docker Deployment
-
-### Build and Run
-```bash
-# Build images
-docker-compose build
-
-# Run in background
-docker-compose up -d
-
-# Scale services
-docker-compose up -d --scale agent-server=2
-
-# View logs
-docker-compose logs -f agent-server
-docker-compose logs -f mcp-server
-```
-
-### Production Deployment
-```bash
-# Use production compose file
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-## 🔒 Security
-
-- **Non-root containers**: Both servers run as non-root users
-- **API key management**: Use environment variables, never commit keys
-- **Health checks**: Built-in health monitoring
-- **Input validation**: Comprehensive request validation
 
 ## 📊 Monitoring
 
-### Health Endpoints
-- Application health status
-- Service dependency checks
-- Memory usage monitoring
-- Uptime tracking
-
-### Logging
-- Structured JSON logging
-- Per-service log files in `logs/` directory
-- Docker logs available via `docker-compose logs`
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-**Port already in use:**
-```bash
-# Check what's using the port
-lsof -i :8001
-lsof -i :8002
-
-# Kill processes if needed
-kill $(lsof -t -i:8001)
-```
-
-**MCP server not ready:**
-- Check logs: `tail -f logs/mcp-server.log`
-- Verify dependencies are installed
-- Check port 8002 is available
-
-**Agent server connection issues:**
-- Ensure MCP server is running first
-- Check network connectivity between containers
-- Verify environment variables
-
-**API key issues:**
-- Verify OpenAI API key is valid
-- Check .env file is properly loaded
-- Test API key with simple OpenAI call
-
-### Debugging
-```bash
-# View live logs
-tail -f logs/*.log
-
-# Docker debugging
-docker-compose logs -f
-docker exec -it photo-triage-agent bash
-docker exec -it photo-triage-mcp bash
-
-# Health checks
-curl http://localhost:8001/health
-curl http://localhost:8002/health
-```
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📞 Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review logs for error messages
-3. Open an issue on GitHub
+### Logs
+- **MCP Server**: `logs/mcp-server.log`
+- **Agent Server**: `logs/agent-server.log` 
+- **Angular Frontend**: `logs/frontend.log`
+- **Unified logging**: The startup script provides combined log streaming

@@ -73,6 +73,10 @@ cleanup() {
         echo "Stopping Agent server (PID: $AGENT_PID)"
         kill $AGENT_PID 2>/dev/null || true
     fi
+    if [ ! -z "$FRONTEND_PID" ]; then
+        echo "Stopping Angular frontend (PID: $FRONTEND_PID)"
+        kill $FRONTEND_PID 2>/dev/null || true
+    fi
     echo -e "${GREEN}✅ Cleanup completed${NC}"
 }
 
@@ -102,6 +106,11 @@ if [ ! -d "agent-server" ]; then
     exit 1
 fi
 
+if [ ! -d "demo" ]; then
+    echo -e "${RED}❌ demo directory not found${NC}"
+    exit 1
+fi
+
 # Check ports
 echo "🔍 Checking ports..."
 
@@ -115,6 +124,12 @@ fi
 if ! check_port 8001; then
     echo "🔫 Freeing port 8001..."
     kill_port_processes 8001
+fi
+
+# Check and free port 4200 (Angular frontend)
+if ! check_port 4200; then
+    echo "🔫 Freeing port 4200..."
+    kill_port_processes 4200
 fi
 
 echo -e "${GREEN}✅ Ports are ready${NC}"
@@ -134,6 +149,12 @@ cd ..
 echo "Setting up Agent server environment..."
 cd agent-server
 uv sync
+cd ..
+
+# Setup Angular frontend dependencies
+echo "Setting up Angular frontend dependencies..."
+cd demo
+npm install
 cd ..
 
 echo -e "${GREEN}✅ Dependencies installed${NC}"
@@ -168,17 +189,34 @@ if ! wait_for_service "http://localhost:8001/api/v1/health" "Agent server"; then
     exit 1
 fi
 
-echo -e "${GREEN}🎉 Both servers are running successfully!${NC}"
+# Start Angular frontend
+echo "🌐 Starting Angular frontend on port 4200..."
+cd demo
+npm start > ../logs/frontend.log 2>&1 &
+FRONTEND_PID=$!
+cd ..
+
+echo "Angular frontend started with PID: $FRONTEND_PID"
+
+# Wait for Angular frontend to be ready
+if ! wait_for_service "http://localhost:4200" "Angular frontend"; then
+    echo -e "${RED}❌ Failed to start Angular frontend${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}🎉 All servers are running successfully!${NC}"
 echo ""
 echo "📋 Service Information:"
-echo "  📡 MCP Server:   http://localhost:8002"
-echo "  🤖 Agent Server: http://localhost:8001"
-echo "  📖 API Docs:     http://localhost:8001/docs"
-echo "  📊 Health Check: http://localhost:8001/api/v1/health"
+echo "  📡 MCP Server:     http://localhost:8002"
+echo "  🤖 Agent Server:   http://localhost:8001"
+echo "  🌐 Frontend Demo:  http://localhost:4200"
+echo "  📖 API Docs:       http://localhost:8001/docs"
+echo "  📊 Health Check:   http://localhost:8001/api/v1/health"
 echo ""
 echo "📝 Logs:"
-echo "  MCP Server:   logs/mcp-server.log"
-echo "  Agent Server: logs/agent-server.log"
+echo "  MCP Server:     logs/mcp-server.log"
+echo "  Agent Server:   logs/agent-server.log"
+echo "  Frontend:       logs/frontend.log"
 echo ""
 echo -e "${YELLOW}Press Ctrl+C to stop all servers${NC}"
 
@@ -186,5 +224,5 @@ echo -e "${YELLOW}Press Ctrl+C to stop all servers${NC}"
 echo "📜 Streaming logs (Ctrl+C to stop)..."
 echo "----------------------------------------"
 
-# Stream logs from both servers
-tail -f logs/mcp-server.log logs/agent-server.log
+# Stream logs from all servers
+tail -f logs/mcp-server.log logs/agent-server.log logs/frontend.log

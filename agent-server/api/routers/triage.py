@@ -340,6 +340,103 @@ async def generate_feedback(
 
 
 @router.post(
+    "/workflow-stream",
+    summary="Execute full triage workflow with streaming",
+    description="Execute the complete ReAct triage workflow with real-time streaming progress updates"
+)
+async def execute_triage_workflow_stream(
+    request: TriageWorkflowRequest,
+    agent: TriageAgent = Depends(get_triage_agent)
+) -> StreamingResponse:
+    """Execute the full triage workflow with streaming updates"""
+    request_id = str(uuid.uuid4())
+    workflow_id = f"wf_{uuid.uuid4().hex[:8]}"
+    
+    logger.info("Streaming triage workflow request received",
+                request_id=request_id,
+                workflow_id=workflow_id,
+                image_count=len(request.images))
+    
+    async def generate_stream():
+        try:
+            # Prepare image paths (similar to workflow processing)
+            image_paths = []
+            for i, image_data in enumerate(request.images):
+                if "image_base64" in image_data:
+                    path = save_temp_image(image_data["image_base64"], is_base64=True)
+                    image_paths.append(path)
+                else:
+                    # Use existing test images for demo
+                    test_paths = ["../test_images/1000000772.png", "../test_images/1000000773.png", "../test_images/1000000774.png", "../test_images/1000000775.png"]
+                    if i < len(test_paths) and os.path.exists(test_paths[i]):
+                        image_paths.append(test_paths[i])
+            
+            if not image_paths:
+                error_data = {"error": "No valid images provided", "request_id": request_id, "workflow_id": workflow_id}
+                yield f"data: {json.dumps(error_data)}\n\n"
+                return
+            
+            # Send initial status
+            start_data = {
+                "status": "started",
+                "request_id": request_id,
+                "workflow_id": workflow_id,
+                "total_images": len(image_paths),
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            yield f"data: {json.dumps(start_data)}\n\n"
+            
+            # Stream workflow execution
+            async for chunk in agent.run_triage_workflow_stream(
+                image_paths, 
+                request.job_context, 
+                request.enable_retry
+            ):
+                chunk["request_id"] = request_id
+                chunk["workflow_id"] = workflow_id
+                chunk["timestamp"] = datetime.now(timezone.utc).isoformat()
+                yield f"data: {json.dumps(chunk)}\n\n"
+            
+            # Clean up temp files
+            for path in image_paths:
+                if path.startswith("/tmp") and os.path.exists(path):
+                    try:
+                        os.unlink(path)
+                    except Exception as e:
+                        logger.warning(f"Failed to cleanup temp file {path}: {e}")
+            
+            # Send completion status
+            complete_data = {
+                "status": "completed",
+                "request_id": request_id,
+                "workflow_id": workflow_id,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            yield f"data: {json.dumps(complete_data)}\n\n"
+            
+        except Exception as e:
+            error_data = {
+                "status": "error",
+                "error": str(e),
+                "request_id": request_id,
+                "workflow_id": workflow_id,
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*"
+        }
+    )
+
+
+@router.post(
     "/process-batch-stream",
     summary="Process multiple photos with streaming",
     description="Process multiple photos concurrently with real-time streaming progress updates"

@@ -7,7 +7,8 @@ def add_cors_middleware(app: FastAPI) -> None:
     """Add CORS middleware to the FastAPI app"""
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins_list,
+        # TODO: fix this CORS bugs
+        allow_origins=["*"], 
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],

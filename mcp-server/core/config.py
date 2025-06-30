@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
     docs_url: str = "/docs"
     redoc_url: str = "/redoc"
-    cors_origins: str = '["http://localhost:3000","http://localhost:8080","http://localhost:5173"]'
+    cors_origins: str = '["http://localhost:3000","http://localhost:8080","http://localhost:5173","http://localhost:4200"]'
     
     
     # Logging

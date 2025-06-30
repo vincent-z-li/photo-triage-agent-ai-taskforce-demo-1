@@ -178,6 +178,20 @@ class MCPHttpClient:
             "enable_retry": enable_retry
         })
     
+    async def triage_with_reflection_stream(
+        self, 
+        image_paths: List[str], 
+        job_context: Optional[str] = None,
+        enable_retry: bool = True
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """Run triage workflow with reflection using MCP server with streaming"""
+        async for chunk in self.call_tool_stream("triage_with_reflection", {
+            "image_paths": image_paths,
+            "job_context": job_context,
+            "enable_retry": enable_retry
+        }):
+            yield chunk
+    
     async def close(self):
         """Close the HTTP client"""
         await self.client.aclose()
